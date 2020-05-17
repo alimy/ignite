@@ -5,60 +5,59 @@
 package vmlet
 
 import (
-	"errors"
-
 	"github.com/alimy/ignite/internal/config"
-	"github.com/alimy/ignite/internal/provision"
-	"github.com/sirupsen/logrus"
+	"github.com/alimy/ignite/internal/vmware"
 )
 
-var (
-	errNoExistWorkspace = errors.New("no exist workspace")
-)
-
-func LetStart(path, workspace, unit string) error {
+func LetStart(path, workspace, tier string) error {
 	conf, err := config.ParseFrom(path)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	staging := conf.Staging()
-	if workspace != "" {
-		w, exist := staging.Workspaces[workspace]
-		if !exist {
-			return errNoExistWorkspace
-		}
-		if err := doStart(w, staging, workspace, unit); err != nil {
-			return err
-		}
-		return nil
-	}
-	for _, w := range staging.Workspaces {
-		if err := doStart(w, staging, workspace, unit); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func doStart(w *provision.Workspace, staging *provision.Staging, workspace string, unit string) error {
-	provider, err := providerFrom(w.Provider, staging)
 	if err != nil {
 		return err
 	}
-	return provider.Start(workspace, unit)
+
+	// TODO: init provider
+	initProvider()
+
+	staging := conf.Staging()
+	return staging.Start(workspace, tier)
 }
 
-func LetStop(path string) error {
-	// TODO
-	return nil
+func LetStop(path, workspace, tier string) error {
+	conf, err := config.ParseFrom(path)
+	if err != nil {
+		return err
+	}
+
+	// TODO: init provider
+	initProvider()
+
+	staging := conf.Staging()
+	return staging.Stop(workspace, tier)
 }
 
-func LetReset(path string) error {
-	// TODO
-	return nil
+func LetReset(path, workspace, tier string) error {
+	conf, err := config.ParseFrom(path)
+	if err != nil {
+		return err
+	}
+
+	// TODO: init provider
+	initProvider()
+
+	staging := conf.Staging()
+	return staging.Reset(workspace, tier)
 }
 
-func LetSuspend(path string) error {
-	// TODO
-	return nil
+func LetSuspend(path, workspace, tier string) error {
+	conf, err := config.ParseFrom(path)
+	if err != nil {
+		return err
+	}
+	// TODO: init provider
+	staging := conf.Staging()
+	return staging.Suspend(workspace, tier)
+}
+
+func initProvider() {
+	vmware.Initialize()
 }

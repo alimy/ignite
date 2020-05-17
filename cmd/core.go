@@ -1,9 +1,12 @@
+// Copyright 2020 Michael Li <alimy@gility.net>. All rights reserved.
+// Use of this source code is governed by Apache License 2.0 that
+// can be found in the LICENSE file.
+
 package cmd
 
 import (
-	"errors"
+	"os"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -11,54 +14,16 @@ var (
 	confPath string
 )
 
-var (
-	optConfPath string
-	optCmd      string
-	optGui      bool
-	optSoft     bool
-	optWs       bool
-
-	errInvalideClusterName = errors.New("invalide cluster name")
-)
-
-func argsFixed() (string, string, string) {
-	argGui := "nogui"
-	argHard := "hard"
-	argFusion := "fusion"
-	if optGui {
-		argGui = "gui"
+func workspaceTier(cmd *cobra.Command) (string, string) {
+	var workspace, tier string
+	flags := cmd.Flags()
+	if flags.NArg() > 1 {
+		workspace, tier = flags.Arg(0), flags.Arg(1)
+	} else if flags.NArg() == 1 {
+		workspace = flags.Arg(0)
+	} else {
+		cmd.Help()
+		os.Exit(1)
 	}
-	if optSoft {
-		argHard = "sort"
-	}
-	if optWs {
-		argFusion = "ws"
-	}
-	return argGui, argHard, argFusion
-}
-
-func clusterInfos(cmd *cobra.Command) []*cluster {
-	clusters, err := parseFrom(optConfPath)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	// set target cluster name
-	if cmd.Flags().NArg() > 0 {
-		name := cmd.Flags().Arg(0)
-		c, exist := clusters[name]
-		if !exist {
-			logrus.Fatal(errInvalideClusterName)
-		}
-		return []*cluster{
-			c,
-		}
-	}
-
-	// process all cluster
-	cs := make([]*cluster, 0, len(clusters))
-	for _, c := range clusters {
-		cs = append(cs, c)
-	}
-	return cs
+	return workspace, tier
 }

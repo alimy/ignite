@@ -7,6 +7,7 @@ package vmware
 import (
 	"github.com/alimy/ignite/internal/process"
 	"github.com/alimy/ignite/internal/provision"
+	"github.com/alimy/ignite/internal/xerror"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,14 +15,13 @@ type vmwareFusion struct {
 	execRun     string
 	displayMode string
 	stateMode   string
-	workspaces  map[string]*provision.Workspace
 }
 
 func (vm *vmwareFusion) Init(staging *provision.Staging) {
 	// TODO
 }
 
-func (vm *vmwareFusion) Start(workspace string, unit string) error {
+func (vm *vmwareFusion) Start(unit *provision.Unit) error {
 	exec := &process.ExecRun{
 		Cmd: vm.execRun,
 		Argv: []string{
@@ -29,19 +29,19 @@ func (vm *vmwareFusion) Start(workspace string, unit string) error {
 			"-T",
 			"fusion",
 			"start",
-			"",
+			unit.Path,
 			vm.displayMode,
 		},
 	}
 	// TODO
-	logrus.Fatal(errNotReady)
+	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (vm *vmwareFusion) Stop(workspace string, unit string) error {
+func (vm *vmwareFusion) Stop(unit *provision.Unit) error {
 	exec := &process.ExecRun{
 		Cmd: vm.execRun,
 		Argv: []string{
@@ -49,19 +49,19 @@ func (vm *vmwareFusion) Stop(workspace string, unit string) error {
 			"-T",
 			"fusion",
 			"stop",
-			"",
+			unit.Path,
 			vm.displayMode,
 		},
 	}
 	// TODO
-	logrus.Fatal(errNotReady)
+	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (vm *vmwareFusion) Reset(workspace string, unit string) error {
+func (vm *vmwareFusion) Reset(unit *provision.Unit) error {
 	exec := &process.ExecRun{
 		Cmd: vm.execRun,
 		Argv: []string{
@@ -69,19 +69,19 @@ func (vm *vmwareFusion) Reset(workspace string, unit string) error {
 			"-T",
 			"fusion",
 			"reset",
-			"",
+			unit.Path,
 			vm.displayMode,
 		},
 	}
 	// TODO
-	logrus.Fatal(errNotReady)
+	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (vm *vmwareFusion) Suspend(workspace string, unit string) error {
+func (vm *vmwareFusion) Suspend(unit *provision.Unit) error {
 	exec := &process.ExecRun{
 		Cmd: vm.execRun,
 		Argv: []string{
@@ -89,20 +89,14 @@ func (vm *vmwareFusion) Suspend(workspace string, unit string) error {
 			"-T",
 			"fusion",
 			"suspend",
-			"",
+			unit.Path,
 			vm.displayMode,
 		},
 	}
 	// TODO
-	logrus.Fatal(errNotReady)
+	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}
 	return nil
-}
-
-func NewVMwareFusion(staging *provision.Staging) provision.Provider {
-	vm := &vmwareFusion{}
-	vm.init(staging)
-	return vm
 }

@@ -5,40 +5,43 @@
 package provision
 
 type Staging struct {
-	VMwareConfig *VMwareConfig
-	Workspaces   map[string]*Workspace
+	Fallback   bool
+	Workspaces map[string]*Workspace
 }
 
 type Workspace struct {
-	Name     string
-	Provider string
-	Workdir  string
-	Units    map[string]*Unit
+	Description string
+	Name        string
+	Tiers       map[string]*Tier
+}
+
+type Tier struct {
+	*Unit
+	Parents  []string
+	Children []string
 }
 
 type Unit struct {
-	Name string
-	Path string
+	Description string
+	Name        string
+	Provider    string
+	Path        string
+	Hosts       []Host
 }
 
-type VMwareConfig struct {
-	Name        string
-	RootDir     string
-	DisplayMode string
-	StateMode   string
+type Host struct {
+	Name string
 }
 
 type Provider interface {
-	Init(staging Staging)
-	Start(workspace string, unit string) error
-	Stop(workspace string, unit string) error
-	Reset(workspace string, unit string) error
-	Suspend(workspace string, unit string) error
+	Start(*Unit) error
+	Stop(*Unit) error
+	Reset(*Unit) error
+	Suspend(*Unit) error
 }
 
 func DefaultStaging() *Staging {
 	return &Staging{
-		VMwareConfig: &VMwareConfig{},
-		Workspaces:   make(map[string]*Workspace),
+		Workspaces: make(map[string]*Workspace),
 	}
 }

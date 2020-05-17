@@ -5,8 +5,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/alimy/ignite/internal/vmlet"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -20,34 +19,15 @@ func init() {
 	}
 
 	// flags inflate
-	stopCmd.Flags().StringVarP(&confPath, "config", "c", "ignite.yml", "config file path")
+	stopCmd.Flags().StringVarP(&confPath, "file", "f", "Ignitefile", "config file path")
 
 	// register stopCmd as sub-command
 	register(stopCmd)
 }
 
 func stopRun(cmd *cobra.Command, _args []string) {
-	clusters := clusterInfos(cmd)
-	argGui, _, argFusion := argsFixed()
-	ci := &cmdInfo{
-		cmd: optCmd,
-		argv: []string{
-			optCmd,
-			"-T",
-			argFusion,
-			"stop",
-			"",
-			argGui,
-		},
-	}
-	for _, cluster := range clusters {
-		logrus.Infof("stop cluster %s\n", cluster.name)
-		for _, node := range cluster.nodes {
-			ci.describe = fmt.Sprintf("stop node %s", node.name)
-			ci.argv[4] = node.path
-			if err := runCmd(ci); err != nil {
-				logrus.Fatal(err)
-			}
-		}
+	w, t := workspaceTier(cmd)
+	if err := vmlet.LetStop(confPath, w, t); err != nil {
+		logrus.Fatal(err)
 	}
 }

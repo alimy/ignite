@@ -5,8 +5,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/alimy/ignite/internal/vmlet"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -20,34 +19,21 @@ func init() {
 	}
 
 	// flags inflate
-	resetCmd.Flags().StringVarP(&confPath, "config", "c", "ignite.yml", "config file path")
+	resetCmd.Flags().StringVarP(&confPath, "file", "f", "Ignitefile", "config file path")
 
 	// register agentCmd as sub-command
 	register(resetCmd)
 }
 
 func resetRun(cmd *cobra.Command, _args []string) {
-	clusters := clusterInfos(cmd)
-	_, argHard, argFusion := argsFixed()
-	ci := &cmdInfo{
-		cmd: optCmd,
-		argv: []string{
-			optCmd,
-			"-T",
-			argFusion,
-			"reset",
-			"",
-			argHard,
-		},
+	var workspace, unit string
+	flags := cmd.Flags()
+	if flags.NArg() > 1 {
+		workspace, unit = flags.Arg(0), flags.Arg(1)
+	} else if flags.NArg() == 1 {
+		workspace = flags.Arg(0)
 	}
-	for _, cluster := range clusters {
-		logrus.Infof("reset cluster %s\n", cluster.name)
-		for _, node := range cluster.nodes {
-			ci.describe = fmt.Sprintf("reset node %s", node.name)
-			ci.argv[4] = node.path
-			if err := runCmd(ci); err != nil {
-				logrus.Fatal(err)
-			}
-		}
+	if err := vmlet.LetStart(confPath, workspace, unit); err != nil {
+		logrus.Fatal(err)
 	}
 }
