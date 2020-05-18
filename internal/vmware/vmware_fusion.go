@@ -5,6 +5,10 @@
 package vmware
 
 import (
+	"os"
+	"path"
+	"path/filepath"
+
 	"github.com/alimy/ignite/internal/process"
 	"github.com/alimy/ignite/internal/provision"
 	"github.com/alimy/ignite/internal/xerror"
@@ -18,7 +22,21 @@ type vmwareFusion struct {
 }
 
 func (vm *vmwareFusion) init(config provision.ProviderConfig) {
+	rootDir := config.RootDir()
+	if fs, err := os.Stat(rootDir); err == nil && fs.IsDir() {
+		dir, _ := filepath.EvalSymlinks(rootDir)
+		vm.execRun = path.Join(dir, "Contents/Public/vmrun")
+	}
 
+	display := config.Feature("display")
+	if display == "gui" || display == "nogui" {
+		vm.displayMode = display
+	}
+
+	state := config.Feature("state")
+	if state == "hard" || state == "soft" {
+		vm.stateMode = state
+	}
 }
 
 func (vm *vmwareFusion) Start(unit *provision.Unit) error {
