@@ -6,8 +6,6 @@ package config
 
 import (
 	"errors"
-
-	"github.com/alimy/ignite/internal/provision"
 )
 
 var (
@@ -22,11 +20,6 @@ type IgniteConfig struct {
 
 func MyConfig() *IgniteConfig {
 	return igniteConfig
-}
-
-func (c *IgniteConfig) Staging() *provision.Staging {
-	staging := provision.DefaultStaging()
-	return staging
 }
 
 func ParseFrom(path string) (*IgniteConfig, error) {

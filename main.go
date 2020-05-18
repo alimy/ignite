@@ -1,6 +1,8 @@
 package main
 
-import "github.com/alimy/ignite/cmd"
+import (
+	"github.com/alimy/ignite/cmd"
+)
 
 func main() {
 	cmd.Setup(

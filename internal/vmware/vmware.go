@@ -4,10 +4,28 @@
 
 package vmware
 
-import "github.com/alimy/ignite/internal/provision"
+import (
+	"github.com/alimy/ignite/internal/provision"
+)
 
-func Initialize() {
-	// TODO init vmwareFusion from config
-	vm := &vmwareFusion{}
-	provision.Register("vmware-fusion", vm)
+func init() {
+	provision.Register(providerFactory{
+		name: "vmware-fusion",
+	})
+}
+
+type providerFactory struct {
+	name string
+}
+
+func (p providerFactory) Name() string {
+	return p.name
+}
+
+func (p providerFactory) NewProvider(config provision.ProviderConfig) provision.Provider {
+	vm := newVMwareFusion()
+	if config != nil && config.Name() == "vmware-fusion" {
+		vm.init(config)
+	}
+	return vm
 }

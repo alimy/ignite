@@ -7,32 +7,32 @@ package provision
 import "github.com/alimy/ignite/internal/xerror"
 
 func (t *Unit) Start() error {
-	provider, exist := providers[t.Provider]
-	if !exist {
+	provider := FindProviderByName(t.Provider)
+	if provider == nil {
 		return xerror.ErrProviderNotSupported
 	}
 	return provider.Start(t)
 }
 
 func (t *Unit) Stop() error {
-	provider, exist := providers[t.Provider]
-	if !exist {
+	provider := FindProviderByName(t.Provider)
+	if provider == nil {
 		return xerror.ErrProviderNotSupported
 	}
 	return provider.Stop(t)
 }
 
 func (t *Unit) Reset() error {
-	provider, exist := providers[t.Provider]
-	if !exist {
+	provider := FindProviderByName(t.Provider)
+	if provider == nil {
 		return xerror.ErrProviderNotSupported
 	}
 	return provider.Reset(t)
 }
 
 func (t *Unit) Suspend() error {
-	provider, exist := providers[t.Provider]
-	if !exist {
+	provider := FindProviderByName(t.Provider)
+	if provider == nil {
 		return xerror.ErrProviderNotSupported
 	}
 	return provider.Suspend(t)

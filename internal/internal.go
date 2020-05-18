@@ -3,3 +3,14 @@
 // can be found in the LICENSE file.
 
 package internal
+
+import (
+	"github.com/alimy/ignite/internal/config"
+	"github.com/alimy/ignite/internal/provision"
+
+	_ "github.com/alimy/ignite/internal/vmware"
+)
+
+func Initialize(config *config.IgniteConfig) {
+	provision.InitProviderWith(config)
+}

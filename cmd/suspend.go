@@ -5,7 +5,6 @@
 package cmd
 
 import (
-	"github.com/alimy/ignite/internal/vmlet"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -26,14 +25,9 @@ func init() {
 }
 
 func suspendRun(cmd *cobra.Command, _args []string) {
-	var workspace, unit string
-	flags := cmd.Flags()
-	if flags.NArg() > 1 {
-		workspace, unit = flags.Arg(0), flags.Arg(1)
-	} else if flags.NArg() == 1 {
-		workspace = flags.Arg(0)
-	}
-	if err := vmlet.LetStart(confPath, workspace, unit); err != nil {
-		logrus.Fatal(err)
+	w, t := workspaceTier(cmd)
+	staging := prepareStaging()
+	if err := staging.Suspend(w, t); err != nil {
+		logrus.Fatal()
 	}
 }

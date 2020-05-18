@@ -4,10 +4,13 @@
 
 package provision
 
-type Staging struct {
-	Fallback   bool
-	Workspaces map[string]*Workspace
-}
+const (
+	TierStateUnknown TierState = iota
+	TierStateDone
+	TierStateFailed
+)
+
+type TierState = int8
 
 type Workspace struct {
 	Description string
@@ -17,8 +20,34 @@ type Workspace struct {
 
 type Tier struct {
 	*Unit
-	Parents  []string
-	Children []string
+	Parents  map[string]TierState
+	Children map[string]TierState
+}
+
+func (t *Tier) SetParentState(name string, state TierState) {
+	t.Parents[name] = state
+}
+
+func (t *Tier) SetChildState(name string, state TierState) {
+	t.Children[name] = state
+}
+
+func (t *Tier) IsParentsDone() bool {
+	for _, p := range t.Parents {
+		if p != TierStateDone {
+			return false
+		}
+	}
+	return true
+}
+
+func (t *Tier) IsChildrenDone() bool {
+	for _, c := range t.Children {
+		if c != TierStateDone {
+			return false
+		}
+	}
+	return true
 }
 
 type Unit struct {
@@ -33,6 +62,12 @@ type Host struct {
 	Name string
 }
 
+type ProviderConfig interface {
+	Name() string
+	RootDir() string
+	Feature(string) string
+}
+
 type Provider interface {
 	Start(*Unit) error
 	Stop(*Unit) error
@@ -40,8 +75,7 @@ type Provider interface {
 	Suspend(*Unit) error
 }
 
-func DefaultStaging() *Staging {
-	return &Staging{
-		Workspaces: make(map[string]*Workspace),
-	}
+type ProviderFactory interface {
+	Name() string
+	NewProvider(ProviderConfig) Provider
 }

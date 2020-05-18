@@ -17,8 +17,8 @@ type vmwareFusion struct {
 	stateMode   string
 }
 
-func (vm *vmwareFusion) Init(staging *provision.Staging) {
-	// TODO
+func (vm *vmwareFusion) init(config provision.ProviderConfig) {
+
 }
 
 func (vm *vmwareFusion) Start(unit *provision.Unit) error {
@@ -99,4 +99,12 @@ func (vm *vmwareFusion) Suspend(unit *provision.Unit) error {
 		return err
 	}
 	return nil
+}
+
+func newVMwareFusion() *vmwareFusion {
+	return &vmwareFusion{
+		execRun:     "/Applications/VMware Fusion.app/Contents/Public/vmrun",
+		displayMode: "nogui",
+		stateMode:   "hard",
+	}
 }
