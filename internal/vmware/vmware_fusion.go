@@ -5,14 +5,13 @@
 package vmware
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/alimy/ignite/internal/process"
 	"github.com/alimy/ignite/internal/provision"
-	"github.com/alimy/ignite/internal/xerror"
-	"github.com/sirupsen/logrus"
 )
 
 type vmwareFusion struct {
@@ -41,7 +40,8 @@ func (vm *vmwareFusion) init(config provision.ProviderConfig) {
 
 func (vm *vmwareFusion) Start(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Cmd: vm.execRun,
+		Describe: fmt.Sprintf("start tier: %s", unit.Description),
+		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
 			"-T",
@@ -51,8 +51,6 @@ func (vm *vmwareFusion) Start(unit *provision.Unit) error {
 			vm.displayMode,
 		},
 	}
-	// TODO
-	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}
@@ -61,18 +59,17 @@ func (vm *vmwareFusion) Start(unit *provision.Unit) error {
 
 func (vm *vmwareFusion) Stop(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Cmd: vm.execRun,
+		Describe: fmt.Sprintf("stop tier: %s", unit.Description),
+		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
 			"-T",
 			"fusion",
 			"stop",
 			unit.Path,
-			vm.displayMode,
+			vm.stateMode,
 		},
 	}
-	// TODO
-	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}
@@ -81,18 +78,17 @@ func (vm *vmwareFusion) Stop(unit *provision.Unit) error {
 
 func (vm *vmwareFusion) Reset(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Cmd: vm.execRun,
+		Describe: fmt.Sprintf("reset tier: %s", unit.Description),
+		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
 			"-T",
 			"fusion",
 			"reset",
 			unit.Path,
-			vm.displayMode,
+			vm.stateMode,
 		},
 	}
-	// TODO
-	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}
@@ -101,18 +97,17 @@ func (vm *vmwareFusion) Reset(unit *provision.Unit) error {
 
 func (vm *vmwareFusion) Suspend(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Cmd: vm.execRun,
+		Describe: fmt.Sprintf("suspend tier: %s", unit.Description),
+		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
 			"-T",
 			"fusion",
 			"suspend",
 			unit.Path,
-			vm.displayMode,
+			vm.stateMode,
 		},
 	}
-	// TODO
-	logrus.Fatal(xerror.ErrNotReady)
 	if err := exec.Run(); err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ staging {
 }
 
 provider "vmware-fusion" {
+  description = "vmware fusion provider"
   rootdir = "/Applications/VMware Fusion.app"
   features {
     display = "nogui"
@@ -16,7 +17,7 @@ provider "vmware-fusion" {
 unit "mysql-router" {
   description = "mysql router."
   provider = "vmware-fusion"
-  path = "~/Apple/var/VMware/mysql-cluster/mysql-router.vmwarevm/mysql-router.vmx"
+  path = "~/Apple/var/VMware/CentOS 8 x64/mysql-router.vmwarevm/mysql-router.vmx"
   hosts = [
     "192.168.117.141"]
 }
@@ -24,7 +25,7 @@ unit "mysql-router" {
 unit "mysql-master" {
   description = "mysql master."
   provider = "vmware-fusion"
-  path = "~/Apple/var/VMware/mysql-cluster/mysql-master.vmwarevm/mysql-master.vmx"
+  path = "~/Apple/var/VMware/CentOS 8 x64/mysql-master.vmwarevm/mysql-master.vmx"
   hosts = [
     "192.168.117.138"]
 }
@@ -32,7 +33,7 @@ unit "mysql-master" {
 unit "mysql-node-1" {
   description = "mysql node 1."
   provider = "vmware-fusion"
-  path = "~/Apple/var/VMware/mysql-cluster/mysql-node-1.vmwarevm/mysql-node-1.vmx"
+  path = "~/Apple/var/VMware/CentOS 8 x64/mysql-node-1.vmwarevm/mysql-node-1.vmx"
   hosts = [
     "192.168.117.139"]
 }
@@ -40,14 +41,13 @@ unit "mysql-node-1" {
 unit "mysql-node-2" {
   description = "mysql node 2."
   provider = "vmware-fusion"
-  path = "~/Apple/var/VMware/mysql-cluster/mysql-node-2.vmwarevm/mysql-node-2.vmx"
+  path = "~/Apple/var/VMware/CentOS 8 x64/mysql-node-2.vmwarevm/mysql-node-2.vmx"
   hosts = [
     "192.168.117.140"]
 }
 
-unit "k8s-register" {
-  description = "docker register."
-  provider = vmware-fusion
+unit "k8s-registry" {
+  description = "docker registry."
   path = "~/Apple/var/VMware/k8s-focal/k8s-registry.vmwarevm/k8s-registr.vmx"
   hosts = [
     "192.168.117.142",
@@ -117,7 +117,7 @@ workspace "mysql-cluster" {
     dependencies = [
       "mysql-master",
       "mysql-node-1",
-      "mysql-node2"]
+      "mysql-node-2"]
   }
 }
 
@@ -127,8 +127,7 @@ workspace "k8s-focal" {
     "k8s-registry",
     "k8s-master-1",
     "k8s-master-2",
-    "k8s-master-3"
-  ]
+    "k8s-master-3"]
   tier "k8s-node-1" {
     dependencies = [
       "k8s-master-1",

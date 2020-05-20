@@ -7,6 +7,8 @@ package provision
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/alimy/ignite/internal/config"
 	"github.com/sirupsen/logrus"
@@ -29,8 +31,9 @@ type StateMsg struct {
 }
 
 type Staging struct {
-	Fallback   bool
-	Workspaces map[string]*Workspace
+	Fallback        bool
+	DefaultProvider string
+	Workspaces      map[string]*Workspace
 }
 
 type handler struct {
@@ -209,12 +212,121 @@ func handleTier(stateChan chan<- *StateMsg, tier *Tier, action func(*Unit) error
 
 func DefaultStaging() *Staging {
 	return &Staging{
-		Workspaces: make(map[string]*Workspace),
+		DefaultProvider: "vmware-fusion",
+		Workspaces:      make(map[string]*Workspace),
 	}
 }
 
 func StagingFrom(config *config.IgniteConfig) *Staging {
 	staging := DefaultStaging()
-	// TODO: init staging from config
+	if config == nil {
+		return staging
+	}
+	staging.Fallback = config.Staging.Fallback
+	if config.Staging.DefaultProvider != "" {
+		staging.DefaultProvider = config.Staging.DefaultProvider
+	}
+	units := unitsFrom(config, staging.DefaultProvider)
+	for _, ws := range config.Workspaces {
+		workspace := &Workspace{
+			Name:        ws.Name,
+			Description: ws.Description,
+		}
+		tiers := make(map[string]*Tier, len(ws.TierList)+len(ws.Tiers))
+		for _, name := range ws.TierList {
+			if _, exist := tiers[name]; exist {
+				continue
+			}
+			unit, exist := units[name]
+			if !exist {
+				logrus.Warnf("not exist unit named %s\n", name)
+				continue
+			}
+			tiers[name] = &Tier{
+				Unit: unit,
+			}
+		}
+		for _, ts := range ws.Tiers {
+			unit, exist := units[ts.Name]
+			if !exist {
+				logrus.Warnf("not exist unit named %s\n", ts.Name)
+				continue
+			}
+			tmpTiers := make(map[string]*Tier, len(ts.Dependencies))
+			for _, dn := range ts.Dependencies {
+				unit, exist := units[dn]
+				if !exist {
+					logrus.Warnf("not exist unit named %s\n", dn)
+					continue
+				}
+				tier, exist := tiers[dn]
+				if !exist {
+					tmpTiers[dn] = &Tier{
+						Unit: unit,
+					}
+				}
+				if tier.Children == nil {
+					tier.Children = make(map[string]TierState)
+				}
+				tier.Children[ts.Name] = TierStateUnknown
+			}
+			for _, tmpTier := range tmpTiers {
+				tiers[tmpTier.Name] = tmpTier
+			}
+			tier, exist := tiers[ts.Name]
+			if !exist {
+				tier = &Tier{
+					Unit: unit,
+				}
+				tiers[ts.Name] = tier
+			}
+			if tier.Parents == nil {
+				tier.Parents = make(map[string]TierState, len(ts.Dependencies))
+			}
+			for _, name := range ts.Dependencies {
+				tier.Parents[name] = TierStateUnknown
+			}
+		}
+		workspace.Tiers = tiers
+		staging.Workspaces[ws.Name] = workspace
+	}
 	return staging
+}
+
+func unitsFrom(config *config.IgniteConfig, defaultProvider string) map[string]*Unit {
+	units := make(map[string]*Unit, len(config.Units))
+	for _, spec := range config.Units {
+		unit := &Unit{
+			Name:        spec.Name,
+			Description: spec.Description,
+			Path:        fixedPath(spec.Path),
+		}
+		if spec.Provider != "" {
+			unit.Provider = spec.Provider
+		} else {
+			unit.Provider = defaultProvider
+		}
+		unit.Hosts = make([]Host, 0, len(spec.Hosts))
+		for _, name := range spec.Hosts {
+			unit.Hosts = append(unit.Hosts, Host{
+				Name: name,
+			})
+		}
+		units[spec.Name] = unit
+	}
+	return units
+}
+
+func fixedPath(path string) string {
+	if path[0] == '~' {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return path
+		}
+		return filepath.Join(homedir, path[1:])
+	}
+	if absPath, err := filepath.Abs(path); err == nil {
+		return absPath
+	}
+	return path
 }

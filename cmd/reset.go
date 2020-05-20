@@ -20,7 +20,7 @@ func init() {
 	// flags inflate
 	resetCmd.Flags().StringVarP(&confPath, "file", "f", "Ignitefile", "config file path")
 
-	// register agentCmd as sub-command
+	// register resetCmd as sub-command
 	register(resetCmd)
 }
 

@@ -64,6 +64,7 @@ type Host struct {
 
 type ProviderConfig interface {
 	Name() string
+	Description() string
 	RootDir() string
 	Feature(string) string
 }
