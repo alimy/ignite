@@ -19,12 +19,7 @@ type ExecRun struct {
 
 func (r *ExecRun) Run() error {
 	logrus.Info(r.Describe)
-	attr := &os.ProcAttr{
-		Files: []*os.File{
-			os.Stdin,
-			os.Stdout,
-			os.Stderr},
-	}
+	attr := &os.ProcAttr{}
 	if homedir, err := os.UserHomeDir(); err == nil {
 		attr.Dir = homedir
 	}
