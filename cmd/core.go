@@ -5,7 +5,9 @@
 package cmd
 
 import (
+	"errors"
 	"os"
+	"path/filepath"
 
 	"github.com/alimy/ignite/internal"
 	"github.com/alimy/ignite/internal/config"
@@ -15,7 +17,8 @@ import (
 )
 
 var (
-	confPath string
+	confPath     string
+	allWorkspace bool
 )
 
 func workspaceTier(cmd *cobra.Command) (string, string) {
@@ -26,8 +29,10 @@ func workspaceTier(cmd *cobra.Command) (string, string) {
 	} else if flags.NArg() == 1 {
 		workspace = flags.Arg(0)
 	} else {
-		cmd.Help()
-		os.Exit(1)
+		if allWorkspace {
+			cmd.Help()
+			os.Exit(1)
+		}
 	}
 	return workspace, tier
 }
@@ -39,4 +44,22 @@ func prepareStaging() *provision.Staging {
 	}
 	internal.Initialize(conf)
 	return provision.StagingFrom(conf)
+}
+
+func checkConfigFile() error {
+	if confPath != "" {
+		return nil
+	}
+	if fi, err := os.Stat("Ignitefile"); err == nil && !fi.IsDir() {
+		confPath = "Ignitefile"
+	} else {
+		homeDir, _ := os.UserHomeDir()
+		path := filepath.Join(homeDir, ".ignite/Ignitefile")
+		if fi, err := os.Stat(path); err == nil && !fi.IsDir() {
+			confPath = path
+		} else {
+			return errors.New("no exist Ignitefile in ./Ignitefile or ~/.ignite/Ignitefile of -f <Ignitefile>")
+		}
+	}
+	return nil
 }

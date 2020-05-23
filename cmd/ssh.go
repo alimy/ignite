@@ -21,7 +21,7 @@ func init() {
 	}
 
 	// flags inflate
-	sshCmd.Flags().StringVarP(&confPath, "file", "f", "Ignitefile", "config file path")
+	sshCmd.Flags().StringVarP(&confPath, "file", "f", "", "config file path")
 	sshCmd.Flags().StringVarP(&userName, "user", "u", "", "user name for ssh")
 	sshCmd.Flags().Int16VarP(&sshPort, "port", "p", 22, "ssh port")
 
@@ -30,6 +30,10 @@ func init() {
 }
 
 func sshRun(cmd *cobra.Command, _args []string) {
+	if err := checkConfigFile(); err != nil {
+		logrus.Fatal(err)
+	}
+
 	var tierName string
 	flags := cmd.Flags()
 	if flags.NArg() == 1 {
@@ -38,6 +42,7 @@ func sshRun(cmd *cobra.Command, _args []string) {
 		cmd.Help()
 		os.Exit(1)
 	}
+
 	staging := prepareStaging()
 	if err := staging.SshTier(userName, tierName, sshPort); err != nil {
 		logrus.Fatal(err)

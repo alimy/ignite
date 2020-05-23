@@ -18,13 +18,17 @@ func init() {
 	}
 
 	// flags inflate
-	stopCmd.Flags().StringVarP(&confPath, "file", "f", "Ignitefile", "config file path")
+	stopCmd.Flags().StringVarP(&confPath, "file", "f", "", "config file path")
+	stopCmd.Flags().BoolVar(&allWorkspace, "all", false, "whether process all workspace")
 
 	// register stopCmd as sub-command
 	register(stopCmd)
 }
 
 func stopRun(cmd *cobra.Command, _args []string) {
+	if err := checkConfigFile(); err != nil {
+		logrus.Fatal(err)
+	}
 	w, t := workspaceTier(cmd)
 	staging := prepareStaging()
 	if err := staging.Stop(w, t); err != nil {
