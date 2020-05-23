@@ -4,7 +4,11 @@
 
 package provision
 
-import "github.com/alimy/ignite/internal/xerror"
+import (
+	"github.com/alimy/ignite/internal/process/ssh"
+	"github.com/alimy/ignite/internal/xerror"
+	"github.com/sirupsen/logrus"
+)
 
 func (t *Unit) Start() error {
 	provider := FindProviderByName(t.Provider)
@@ -36,4 +40,15 @@ func (t *Unit) Suspend() error {
 		return xerror.ErrProviderNotSupported
 	}
 	return provider.Suspend(t)
+}
+
+func (t *Unit) Ssh(user string, port int16) error {
+	for _, host := range t.Hosts {
+		if err := ssh.Run(user, host.Name, port); err != nil {
+			logrus.Warn(err)
+			continue
+		}
+		break
+	}
+	return nil
 }

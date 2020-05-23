@@ -14,6 +14,10 @@ RELEASE_WINDOWS_AMD64 = $(RELEASE_ROOT)/windows-amd64/$(TARGET)
 build: fmt
 	go build  -ldflags '$(LDFLAGS)' -o $(TARGET) main.go
 
+.PHONY: install
+install: fmt
+	go install
+
 .PHONY: release
 release: linux-amd64 darwin-amd64 windows-x64
 	cp LICENSE README.md $(RELEASE_LINUX_AMD64)

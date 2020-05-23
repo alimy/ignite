@@ -15,15 +15,13 @@ type ExecRun struct {
 	Describe string
 	Cmd      string
 	Argv     []string
+	Attr     *os.ProcAttr
 }
 
 func (r *ExecRun) Run() error {
 	logrus.Info(r.Describe)
-	attr := &os.ProcAttr{}
-	if homedir, err := os.UserHomeDir(); err == nil {
-		attr.Dir = homedir
-	}
-	process, err := os.StartProcess(r.Cmd, r.Argv, attr)
+	r.checkProcAttr()
+	process, err := os.StartProcess(r.Cmd, r.Argv, r.Attr)
 	if err != nil {
 		return err
 	}
@@ -35,4 +33,26 @@ func (r *ExecRun) Run() error {
 		return errors.New(ps.String())
 	}
 	return nil
+}
+
+func (r *ExecRun) checkProcAttr() {
+	if r.Attr == nil {
+		r.Attr = &os.ProcAttr{}
+		if homedir, err := os.UserHomeDir(); err == nil {
+			r.Attr.Dir = homedir
+		}
+	}
+}
+
+func DefaultProcAttr(inStdio bool) *os.ProcAttr {
+	attr := &os.ProcAttr{}
+	if inStdio {
+		attr.Files = []*os.File{
+			os.Stdin, os.Stdout, os.Stderr,
+		}
+	}
+	if homedir, err := os.UserHomeDir(); err == nil {
+		attr.Dir = homedir
+	}
+	return attr
 }

@@ -28,6 +28,6 @@ func startRun(cmd *cobra.Command, _args []string) {
 	w, t := workspaceTier(cmd)
 	staging := prepareStaging()
 	if err := staging.Start(w, t); err != nil {
-		logrus.Fatal()
+		logrus.Fatal(err)
 	}
 }

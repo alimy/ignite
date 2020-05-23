@@ -28,6 +28,6 @@ func suspendRun(cmd *cobra.Command, _args []string) {
 	w, t := workspaceTier(cmd)
 	staging := prepareStaging()
 	if err := staging.Suspend(w, t); err != nil {
-		logrus.Fatal()
+		logrus.Fatal(err)
 	}
 }

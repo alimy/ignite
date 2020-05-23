@@ -33,6 +33,7 @@ type StateMsg struct {
 type Staging struct {
 	Fallback        bool
 	DefaultProvider string
+	Tiers           map[string]*Tier
 	Workspaces      map[string]*Workspace
 }
 
@@ -62,6 +63,14 @@ func (s *Staging) Reset(workspace string, tier string) error {
 
 func (s *Staging) Suspend(workspace string, tier string) error {
 	return s.run(actionSuspend, workspace, tier)
+}
+
+func (s *Staging) SshTier(userName string, tierName string, sshPort int16) error {
+	tier, exist := s.Tiers[tierName]
+	if !exist {
+		return errNotExistTier
+	}
+	return tier.Ssh(userName, sshPort)
 }
 
 func (s *Staging) run(action string, workspace string, tier string) error {
@@ -213,6 +222,7 @@ func handleTier(stateChan chan<- *StateMsg, tier *Tier, action func(*Unit) error
 func DefaultStaging() *Staging {
 	return &Staging{
 		DefaultProvider: "vmware-fusion",
+		Tiers:           make(map[string]*Tier),
 		Workspaces:      make(map[string]*Workspace),
 	}
 }
@@ -289,6 +299,9 @@ func StagingFrom(config *config.IgniteConfig) *Staging {
 		}
 		workspace.Tiers = tiers
 		staging.Workspaces[ws.Name] = workspace
+		for name, tier := range tiers {
+			staging.Tiers[name] = tier
+		}
 	}
 	return staging
 }
