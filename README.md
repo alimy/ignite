@@ -29,6 +29,12 @@ INFO[0000] suspend workspace: mysql-cluster
 INFO[0000] suspend tier: mysql router.                  
 INFO[0000] suspend tier: mysql node 2.                  
 INFO[0000] suspend tier: mysql node 1.                  
-INFO[0002] suspend tier: mysql master.  
+INFO[0002] suspend tier: mysql master.
 
+# ssh to tier
+% ignite ssh -u alimy mysql-master
+INFO[0000] try ssh to alimy@192.168.117.138 on port 22
+Activate the web console with: systemctl enable --now cockpit.socket
+
+Last login: Sat May 23 18:17:04 2020 from 192.168.117.1
 ```
