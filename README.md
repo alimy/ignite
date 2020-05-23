@@ -6,7 +6,7 @@ Ignite is a tool to help start/stop/suspend/reset vmware fusion's virtual machin
 % go get github.com/alimy/ignite@latest
 ```
 #### Ignitefile
-Ignitefile is a [HCL](https://github.com/hasicorp/hcl) format file.A sample file is [here](assets/Ignitefile).
+Ignitefile is a [HCL](https://github.com/hashicorp/hcl) format file.A sample file is [here](assets/Ignitefile).
 
 #### Usage
 ```bash
