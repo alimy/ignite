@@ -74,6 +74,8 @@ type Provider interface {
 	Stop(*Unit) error
 	Reset(*Unit) error
 	Suspend(*Unit) error
+	Pause(*Unit) error
+	Unpause(*Unit) error
 }
 
 type ProviderFactory interface {

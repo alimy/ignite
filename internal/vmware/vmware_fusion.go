@@ -40,7 +40,7 @@ func (vm *vmwareFusion) init(config provision.ProviderConfig) {
 
 func (vm *vmwareFusion) Start(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Describe: fmt.Sprintf("start tier: %s", unit.Description),
+		Describe: vm.actionDescribe("start", unit),
 		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
@@ -51,15 +51,12 @@ func (vm *vmwareFusion) Start(unit *provision.Unit) error {
 			vm.displayMode,
 		},
 	}
-	if err := exec.Run(); err != nil {
-		return err
-	}
-	return nil
+	return exec.Run()
 }
 
 func (vm *vmwareFusion) Stop(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Describe: fmt.Sprintf("stop tier: %s", unit.Description),
+		Describe: vm.actionDescribe("stop", unit),
 		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
@@ -70,15 +67,12 @@ func (vm *vmwareFusion) Stop(unit *provision.Unit) error {
 			vm.stateMode,
 		},
 	}
-	if err := exec.Run(); err != nil {
-		return err
-	}
-	return nil
+	return exec.Run()
 }
 
 func (vm *vmwareFusion) Reset(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Describe: fmt.Sprintf("reset tier: %s", unit.Description),
+		Describe: vm.actionDescribe("reset", unit),
 		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
@@ -89,15 +83,12 @@ func (vm *vmwareFusion) Reset(unit *provision.Unit) error {
 			vm.stateMode,
 		},
 	}
-	if err := exec.Run(); err != nil {
-		return err
-	}
-	return nil
+	return exec.Run()
 }
 
 func (vm *vmwareFusion) Suspend(unit *provision.Unit) error {
 	exec := &process.ExecRun{
-		Describe: fmt.Sprintf("suspend tier: %s", unit.Description),
+		Describe: vm.actionDescribe("suspend", unit),
 		Cmd:      vm.execRun,
 		Argv: []string{
 			vm.execRun,
@@ -108,10 +99,41 @@ func (vm *vmwareFusion) Suspend(unit *provision.Unit) error {
 			vm.stateMode,
 		},
 	}
-	if err := exec.Run(); err != nil {
-		return err
+	return exec.Run()
+}
+
+func (vm *vmwareFusion) Pause(unit *provision.Unit) error {
+	exec := &process.ExecRun{
+		Describe: vm.actionDescribe("pause", unit),
+		Cmd:      vm.execRun,
+		Argv: []string{
+			vm.execRun,
+			"-T",
+			"fusion",
+			"pause",
+			unit.Path,
+		},
 	}
-	return nil
+	return exec.Run()
+}
+
+func (vm *vmwareFusion) Unpause(unit *provision.Unit) error {
+	exec := &process.ExecRun{
+		Describe: vm.actionDescribe("unpause", unit),
+		Cmd:      vm.execRun,
+		Argv: []string{
+			vm.execRun,
+			"-T",
+			"fusion",
+			"unpause",
+			unit.Path,
+		},
+	}
+	return exec.Run()
+}
+
+func (vm *vmwareFusion) actionDescribe(action string, unit *provision.Unit) string {
+	return fmt.Sprintf("%s tier: %s", action, unit.Name)
 }
 
 func newVMwareFusion() *vmwareFusion {

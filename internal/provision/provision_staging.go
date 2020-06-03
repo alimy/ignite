@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/alimy/ignite/internal/config"
 	"github.com/sirupsen/logrus"
@@ -22,6 +23,11 @@ var (
 	actionStop    = "stop"
 	actionReset   = "reset"
 	actionSuspend = "suspend"
+	actionPause   = "pause"
+	actionUnpause = "unpause"
+
+	lastHandleTime       int64
+	maxSeqHandleTierTime = 200 * time.Millisecond
 )
 
 type StateMsg struct {
@@ -65,6 +71,14 @@ func (s *Staging) Suspend(workspace string, tier string) error {
 	return s.run(actionSuspend, workspace, tier)
 }
 
+func (s *Staging) Pause(workspace string, tier string) error {
+	return s.run(actionPause, workspace, tier)
+}
+
+func (s *Staging) Unpause(workspace string, tier string) error {
+	return s.run(actionUnpause, workspace, tier)
+}
+
 func (s *Staging) SshTier(userName string, tierName string, sshPort int16) error {
 	tier, exist := s.Tiers[tierName]
 	if !exist {
@@ -92,6 +106,14 @@ func (s *Staging) run(action string, workspace string, tier string) error {
 		h = handleFun("suspend", func(unit *Unit) error {
 			return unit.Suspend()
 		})
+	case actionPause:
+		h = handleFun("pause", func(unit *Unit) error {
+			return unit.Pause()
+		})
+	case actionUnpause:
+		h = handleFun("unpause", func(unit *Unit) error {
+			return unit.Unpause()
+		})
 	}
 	if workspace == "" {
 		return s.handleAllWorkspace(h)
@@ -116,9 +138,9 @@ func (s *Staging) tiersBy(workspace string, tier string) (map[string]*Tier, erro
 
 func (s *Staging) handleTiers(tiers map[string]*Tier, h *handler) (err error) {
 	switch h.Name {
-	case actionStart:
+	case actionStart, actionPause:
 		err = s.handleTiersAsc(tiers, h)
-	case actionStop, actionReset, actionSuspend:
+	case actionStop, actionReset, actionSuspend, actionUnpause:
 		err = s.handleTiersDesc(tiers, h)
 	}
 	return
@@ -205,6 +227,13 @@ func (s *Staging) handleAllWorkspace(h *handler) error {
 }
 
 func handleTier(stateChan chan<- *StateMsg, tier *Tier, action func(*Unit) error) {
+	now := time.Now().UnixNano()
+	// sleep maxSeqHandleTime then handle the tier to avoid failure in too speed process
+	if time.Duration(now-lastHandleTime) < maxSeqHandleTierTime {
+		time.Sleep(maxSeqHandleTierTime)
+	}
+	lastHandleTime = now
+
 	if err := action(tier.Unit); err != nil {
 		stateChan <- &StateMsg{
 			State: TierStateFailed,

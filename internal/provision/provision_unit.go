@@ -42,6 +42,22 @@ func (t *Unit) Suspend() error {
 	return provider.Suspend(t)
 }
 
+func (t *Unit) Pause() error {
+	provider := FindProviderByName(t.Provider)
+	if provider == nil {
+		return xerror.ErrProviderNotSupported
+	}
+	return provider.Pause(t)
+}
+
+func (t *Unit) Unpause() error {
+	provider := FindProviderByName(t.Provider)
+	if provider == nil {
+		return xerror.ErrProviderNotSupported
+	}
+	return provider.Unpause(t)
+}
+
 func (t *Unit) Ssh(user string, port int16) error {
 	for _, host := range t.Hosts {
 		if err := ssh.Run(user, host.Name, port); err != nil {
