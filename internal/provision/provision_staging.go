@@ -28,9 +28,6 @@ var (
 	actionSuspend = "suspend"
 	actionPause   = "pause"
 	actionUnpause = "unpause"
-
-	lastHandleTime       int64
-	maxSeqHandleTierTime = 200 * time.Millisecond
 )
 
 type StateMsg struct {
@@ -40,6 +37,7 @@ type StateMsg struct {
 }
 
 type Staging struct {
+	retryNum        int
 	Fallback        bool
 	DefaultProvider string
 	Tiers           map[string]*Tier
@@ -196,7 +194,7 @@ func (s *Staging) handleTiersAsc(tiers map[string]*Tier, h *handler) error {
 	remainTiersCount := len(tiers)
 	for _, tier := range tiers {
 		if len(tier.Parents) == 0 {
-			go handleTier(stateChan, tier, h.Func)
+			go s.handleTier(stateChan, tier, h.Func)
 		}
 	}
 	for sc := range stateChan {
@@ -211,7 +209,7 @@ func (s *Staging) handleTiersAsc(tiers map[string]*Tier, h *handler) error {
 			tier := tiers[name]
 			tier.SetParentState(sc.Tier.Name, TierStateDone)
 			if tier.IsParentsDone() {
-				go handleTier(stateChan, tier, h.Func)
+				go s.handleTier(stateChan, tier, h.Func)
 			}
 		}
 	}
@@ -224,7 +222,7 @@ func (s *Staging) handleTiersDesc(tiers map[string]*Tier, h *handler) error {
 	remainTiersCount := len(tiers)
 	for _, tier := range tiers {
 		if len(tier.Children) == 0 {
-			go handleTier(stateChan, tier, h.Func)
+			go s.handleTier(stateChan, tier, h.Func)
 		}
 	}
 	for sc := range stateChan {
@@ -239,7 +237,7 @@ func (s *Staging) handleTiersDesc(tiers map[string]*Tier, h *handler) error {
 			tier := tiers[name]
 			tier.SetChildState(sc.Tier.Name, TierStateDone)
 			if tier.IsChildrenDone() {
-				go handleTier(stateChan, tier, h.Func)
+				go s.handleTier(stateChan, tier, h.Func)
 			}
 		}
 	}
@@ -270,15 +268,17 @@ func (s *Staging) handleAllWorkspace(h *handler) error {
 	return nil
 }
 
-func handleTier(stateChan chan<- *StateMsg, tier *Tier, action func(*Unit) error) {
-	now := time.Now().UnixNano()
-	// sleep maxSeqHandleTime then handle the tier to avoid failure in too speed process
-	if time.Duration(now-lastHandleTime) < maxSeqHandleTierTime {
-		time.Sleep(maxSeqHandleTierTime)
+func (s *Staging) handleTier(stateChan chan<- *StateMsg, tier *Tier, action func(*Unit) error) {
+	var err error
+	for i := 0; i <= s.retryNum; i++ {
+		if err = action(tier.Unit); err == nil {
+			break
+		} else if i != s.retryNum {
+			logrus.Warnf("retry[%d] handle tier because %s", i+1, err)
+			time.Sleep(300 * time.Millisecond)
+		}
 	}
-	lastHandleTime = now
-
-	if err := action(tier.Unit); err != nil {
+	if err != nil {
 		stateChan <- &StateMsg{
 			State: TierStateFailed,
 			Tier:  tier,
@@ -294,6 +294,7 @@ func handleTier(stateChan chan<- *StateMsg, tier *Tier, action func(*Unit) error
 
 func DefaultStaging() *Staging {
 	return &Staging{
+		retryNum:        1,
 		DefaultProvider: "vmware-fusion",
 		Tiers:           make(map[string]*Tier),
 		Workspaces:      make(map[string]*Workspace),
