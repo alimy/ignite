@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/alimy/ignite/internal/config"
+	"github.com/alimy/ignite/internal/terminal"
 	"github.com/sirupsen/logrus"
 )
 
@@ -77,6 +79,30 @@ func (s *Staging) Pause(workspace string, tier string) error {
 
 func (s *Staging) Unpause(workspace string, tier string) error {
 	return s.run(actionUnpause, workspace, tier)
+}
+
+func (s *Staging) WorkspacesInfo() error {
+	ti := terminal.NewTableInfo("Name", "Tiers", "Description")
+	for name, workspace := range s.Workspaces {
+		tiers := strconv.Itoa(len(workspace.Tiers))
+		ti.Add(name, tiers, workspace.Description)
+	}
+	terminal.PrintTable(ti)
+	return nil
+}
+
+func (s *Staging) UnitsInfo() error {
+	ti := terminal.NewTableInfo("Name", "Provider", "Description")
+	conf := config.MyConfig()
+	for _, unit := range conf.Units {
+		provider := unit.Provider
+		if provider == "" {
+			provider = s.DefaultProvider
+		}
+		ti.Add(unit.Name, provider, unit.Description)
+	}
+	terminal.PrintTable(ti)
+	return nil
 }
 
 func (s *Staging) SshTier(userName string, tierName string, sshPort int16) error {
