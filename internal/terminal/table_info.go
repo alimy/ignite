@@ -12,8 +12,13 @@ import (
 type TableInfo struct {
 	maxColNum  int
 	maxColWide []int
+	infos      []string
 	heads      []string
 	records    [][]string
+}
+
+func (t *TableInfo) Infos(infos ...string) {
+	t.infos = append(t.infos, infos...)
 }
 
 func (t *TableInfo) Add(items ...string) {
@@ -27,6 +32,20 @@ func (t *TableInfo) Add(items ...string) {
 
 func (t *TableInfo) String() string {
 	sb := &strings.Builder{}
+
+	// information print
+	for _, info := range t.infos {
+		sb.WriteString(info)
+		sb.WriteByte('\n')
+	}
+	if len(t.infos) > 0 && len(t.records) > 0 {
+		sb.WriteByte('\n')
+	}
+
+	// table header info
+	if len(t.records) == 0 {
+		return sb.String()
+	}
 	lastColIdx := len(t.heads) - 1
 	for i, head := range t.heads {
 		t.writeItem(sb, i, head)
@@ -34,6 +53,8 @@ func (t *TableInfo) String() string {
 			sb.WriteByte('\n')
 		}
 	}
+
+	// record info print
 	lastRecordIdx := len(t.records) - 1
 	for i, recItems := range t.records {
 		var idx int

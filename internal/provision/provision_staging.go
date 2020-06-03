@@ -91,8 +91,12 @@ func (s *Staging) WorkspacesInfo() error {
 }
 
 func (s *Staging) TiersInfo(workspace string) error {
-	ti := terminal.NewTableInfo("Name", "Hosts", "Description")
+	ti := terminal.NewTableInfo("Tier", "Hosts", "Description")
 	if ws, exist := s.Workspaces[workspace]; exist {
+		ti.Infos(
+			fmt.Sprintf("Name: %s\t Tiers: %d", workspace, len(ws.Tiers)),
+			fmt.Sprintf("Description: %s", ws.Description),
+		)
 		for name, tier := range ws.Tiers {
 			hosts := make([]string, len(tier.Hosts))
 			for i, host := range tier.Hosts {
