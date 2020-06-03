@@ -29,7 +29,15 @@ func workspacesRun(cmd *cobra.Command, _args []string) {
 		logrus.Fatal(err)
 	}
 	staging := prepareStaging()
-	if err := staging.WorkspacesInfo(); err != nil {
-		logrus.Fatal(err)
+	flags := cmd.Flags()
+	if flags.NArg() >= 1 {
+		workspace := flags.Arg(0)
+		if err := staging.TiersInfo(workspace); err != nil {
+			logrus.Fatal(err)
+		}
+	} else {
+		if err := staging.WorkspacesInfo(); err != nil {
+			logrus.Fatal(err)
+		}
 	}
 }

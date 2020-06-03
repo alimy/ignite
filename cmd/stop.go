@@ -12,8 +12,8 @@ import (
 func init() {
 	stopCmd := &cobra.Command{
 		Use:   "stop",
-		Short: "stop a vmware node",
-		Long:  "stop a vmware node",
+		Short: "stop a workspace",
+		Long:  "stop a workspace",
 		Run:   stopRun,
 	}
 

@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/alimy/ignite/internal/config"
@@ -86,6 +87,23 @@ func (s *Staging) WorkspacesInfo() error {
 	for name, workspace := range s.Workspaces {
 		tiers := strconv.Itoa(len(workspace.Tiers))
 		ti.Add(name, tiers, workspace.Description)
+	}
+	terminal.PrintTable(ti)
+	return nil
+}
+
+func (s *Staging) TiersInfo(workspace string) error {
+	ti := terminal.NewTableInfo("Name", "Hosts", "Description")
+	if ws, exist := s.Workspaces[workspace]; exist {
+		for name, tier := range ws.Tiers {
+			hosts := make([]string, len(tier.Hosts))
+			for i, host := range tier.Hosts {
+				hosts[i] = host.Name
+			}
+			ti.Add(name, strings.Join(hosts, ","), tier.Description)
+		}
+	} else {
+		return errNotExistWorkspace
 	}
 	terminal.PrintTable(ti)
 	return nil
