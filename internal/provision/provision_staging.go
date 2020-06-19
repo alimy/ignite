@@ -128,7 +128,7 @@ func (s *Staging) UnitsInfo() error {
 func (s *Staging) SshTier(userName string, tierName string, sshPort int16) error {
 	tier, exist := s.Tiers[tierName]
 	if !exist {
-		return errNotExistTier
+		return fmt.Errorf("fail search tier for %s: %w", tierName, errNotExistTier)
 	}
 	return tier.Ssh(userName, sshPort)
 }

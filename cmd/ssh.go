@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -45,6 +46,14 @@ func sshRun(cmd *cobra.Command, _args []string) {
 	} else {
 		cmd.Help()
 		os.Exit(1)
+	}
+
+	// handle ignite ssh user@tiername
+	if userIdx := strings.Index(tierName, "@"); userIdx > 0 {
+		if userName == "" {
+			userName = tierName[:userIdx]
+		}
+		tierName = tierName[userIdx+1:]
 	}
 
 	staging := prepareStaging()
