@@ -5,19 +5,16 @@
 package version
 
 import (
-	"github.com/coreos/go-semver/semver"
+	"github.com/Masterminds/semver/v3"
 )
 
 var (
 	// GitHash Value will be set during build
 	GitHash = ""
+
 	// BuildTime Value will be set during build
 	BuildTime = ""
-)
 
-// AppVer version of ignite
-var AppVer = semver.Version{
-	Major: 0,
-	Minor: 3,
-	Patch: 2,
-}
+	// AppVer version of ignite
+	AppVer = semver.MustParse("v0.4.0")
+)

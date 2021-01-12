@@ -11,10 +11,11 @@ import (
 
 func init() {
 	unpauseCmd := &cobra.Command{
-		Use:   "unpause",
-		Short: "unpause a workspace",
-		Long:  "unpause a workspace",
-		Run:   unpauseRun,
+		Use:        "unpause",
+		SuggestFor: []string{"pause"},
+		Short:      "unpause a workspace",
+		Long:       "unpause a workspace",
+		Run:        unpauseRun,
 	}
 
 	// flags inflate

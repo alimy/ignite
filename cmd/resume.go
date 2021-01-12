@@ -10,10 +10,11 @@ import (
 
 func init() {
 	resumeCmd := &cobra.Command{
-		Use:   "resume",
-		Short: "resume a workspace",
-		Long:  "resume a workspace",
-		Run:   startRun,
+		Use:        "resume",
+		SuggestFor: []string{"suspend"},
+		Short:      "resume a workspace",
+		Long:       "resume a workspace",
+		Run:        startRun,
 	}
 
 	// flags inflate

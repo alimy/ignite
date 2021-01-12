@@ -11,10 +11,12 @@ import (
 
 func init() {
 	suspendCmd := &cobra.Command{
-		Use:   "suspend",
-		Short: "suspend a workspace",
-		Long:  "suspend a workspace",
-		Run:   suspendRun,
+		Use:        "suspend",
+		Aliases:    []string{"s"},
+		SuggestFor: []string{"start", "resume"},
+		Short:      "suspend a workspace",
+		Long:       "suspend a workspace",
+		Run:        suspendRun,
 	}
 
 	// flags inflate

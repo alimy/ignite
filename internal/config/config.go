@@ -44,6 +44,7 @@ type Unit struct {
 
 type Tier struct {
 	Name         string   `hcl:"name,label"`
+	Inactive     bool     `hcl:"inactive,optional"`
 	Dependencies []string `hcl:"dependencies,optional"`
 }
 

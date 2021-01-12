@@ -91,7 +91,7 @@ func (s *Staging) WorkspacesInfo() error {
 }
 
 func (s *Staging) TiersInfo(workspace string) error {
-	ti := terminal.NewTableInfo("Tier", "Hosts", "Description")
+	ti := terminal.NewTableInfo("Tier", "Hosts", "State", "Description")
 	if ws, exist := s.Workspaces[workspace]; exist {
 		ti.Infos(
 			fmt.Sprintf("Name: %s\t Tiers: %d", workspace, len(ws.Tiers)),
@@ -102,7 +102,7 @@ func (s *Staging) TiersInfo(workspace string) error {
 			for i, host := range tier.Hosts {
 				hosts[i] = host.Name
 			}
-			ti.Add(name, strings.Join(hosts, ","), tier.Description)
+			ti.Add(name, strings.Join(hosts, ","), tier.ActiveState(), tier.Description)
 		}
 	} else {
 		return errNotExistWorkspace
@@ -203,7 +203,9 @@ func (s *Staging) handleTiersAsc(tiers map[string]*Tier, h *handler) error {
 	}
 	for sc := range stateChan {
 		if sc.State == TierStateFailed {
-			return fmt.Errorf("%s tier of %s failed: %w", h.Name, sc.Tier.Name, sc.Error)
+			return fmt.Errorf("%s tier: %s but failed by %w", h.Name, sc.Tier.Name, sc.Error)
+		} else if sc.State == TierStateInactive {
+			logrus.Warnf("%s tier: %s but skiped by inactive state", h.Name, sc.Tier.Name)
 		}
 		if remainTiersCount--; remainTiersCount == 0 { // handler finish
 			break
@@ -231,7 +233,9 @@ func (s *Staging) handleTiersDesc(tiers map[string]*Tier, h *handler) error {
 	}
 	for sc := range stateChan {
 		if sc.State == TierStateFailed {
-			return fmt.Errorf("%s tier of %s failed: %w", h.Name, sc.Tier.Name, sc.Error)
+			return fmt.Errorf("%s tier: %s but failed by %w", h.Name, sc.Tier.Name, sc.Error)
+		} else if sc.State == TierStateInactive {
+			logrus.Warnf("%s tier: %s but skiped by inactive state", h.Name, sc.Tier.Name)
 		}
 		if remainTiersCount--; remainTiersCount == 0 { // handler finish
 			break
@@ -273,6 +277,14 @@ func (s *Staging) handleAllWorkspace(h *handler) error {
 }
 
 func (s *Staging) handleTier(stateChan chan<- *StateMsg, tier *Tier, h *handler) {
+	if tier.Inactive {
+		stateChan <- &StateMsg{
+			State: TierStateInactive,
+			Tier:  tier,
+		}
+		return
+	}
+
 	var err error
 	for i := 0; i <= s.retryNum; i++ {
 		if err = h.Func(tier.Unit); err == nil {
@@ -374,6 +386,7 @@ func StagingFrom(config *config.IgniteConfig) *Staging {
 			for _, name := range ts.Dependencies {
 				tier.Parents[name] = TierStateUnknown
 			}
+			tier.Inactive = ts.Inactive
 		}
 		workspace.Tiers = tiers
 		staging.Workspaces[ws.Name] = workspace

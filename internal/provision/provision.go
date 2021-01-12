@@ -8,6 +8,7 @@ const (
 	TierStateUnknown TierState = iota
 	TierStateDone
 	TierStateFailed
+	TierStateInactive
 )
 
 type TierState = int8
@@ -20,8 +21,16 @@ type Workspace struct {
 
 type Tier struct {
 	*Unit
+	Inactive bool
 	Parents  map[string]TierState
 	Children map[string]TierState
+}
+
+func (t *Tier) ActiveState() string {
+	if t.Inactive {
+		return "inactive"
+	}
+	return "active"
 }
 
 func (t *Tier) SetParentState(name string, state TierState) {

@@ -11,16 +11,16 @@ import (
 
 func init() {
 	workspacesCmd := &cobra.Command{
-		Use:   "workspaces",
-		Short: "list all workspace info",
-		Long:  "list all workspace info",
-		Run:   workspacesRun,
+		Use:        "workspaces",
+		Aliases:    []string{"ws", "workspace"},
+		SuggestFor: []string{"units"},
+		Short:      "list all workspace info",
+		Long:       "list all workspace info",
+		Run:        workspacesRun,
 	}
 
-	// flags inflate
 	workspacesCmd.Flags().StringVarP(&confPath, "file", "f", "", "config file path")
 
-	// register workspacesCmd as sub-command
 	register(workspacesCmd)
 }
 

@@ -19,13 +19,9 @@ install: fmt
 	go install
 
 .PHONY: release
-release: linux-amd64 darwin-amd64 windows-x64
-	cp LICENSE README.md $(RELEASE_LINUX_AMD64)
+release: darwin-amd64
 	cp LICENSE README.md $(RELEASE_DARWIN_AMD64)
-	cp LICENSE README.md $(RELEASE_WINDOWS_AMD64)
-	cd $(RELEASE_LINUX_AMD64)/.. && rm -f *.zip && zip -r $(TARGET)-linux_amd64.zip $(TARGET) && cd -
 	cd $(RELEASE_DARWIN_AMD64)/.. && rm -f *.zip && zip -r $(TARGET)-darwin_amd64.zip $(TARGET) && cd -
-	cd $(RELEASE_WINDOWS_AMD64)/.. && rm -f *.zip && zip -r $(TARGET)-windows_amd64.zip $(TARGET) && cd -
 
 .PHONY: linux-amd64
 linux-amd64:
