@@ -1,8 +1,10 @@
+PACKGE ?= github.com/alimy/ignite
+
 GOFMT ?= gofmt -s -w
 GOFILES := $(shell find . -name "*.go" -type f)
 
-LDFLAGS += -X "github.com/alimy/ignite/version.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S %Z')"
-LDFLAGS += -X "github.com/alimy/ignite/version.GitHash=$(shell git rev-parse HEAD)"
+LDFLAGS += -X "$(PACKGE)/version.BuildTime=$(shell date -v+8H -u '+%Y-%m-%d %H:%M:%S %Z+8')"
+LDFLAGS += -X "$(PACKGE)/version.GitHash=$(shell git rev-parse --short=12 HEAD)"
 
 TARGET = ignite
 RELEASE_ROOT = release

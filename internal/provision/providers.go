@@ -7,7 +7,7 @@ package provision
 import (
 	"sync"
 
-	"github.com/alimy/ignite/internal/config"
+	"github.com/alimy/ignite/internal/conf"
 	"github.com/sirupsen/logrus"
 )
 
@@ -68,7 +68,7 @@ func Register(factory ProviderFactory) {
 	}
 }
 
-func InitProviderWith(config *config.IgniteConfig) {
+func InitProviderWith(config *conf.IgniteConfig) {
 	for _, spec := range config.Providers {
 		ps := &providerSpec{
 			name:        spec.Name,

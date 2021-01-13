@@ -56,3 +56,15 @@ func DefaultProcAttr(inStdio bool) *os.ProcAttr {
 	}
 	return attr
 }
+
+func PwdProcAttr(inStdio bool) *os.ProcAttr {
+	attr := &os.ProcAttr{
+		Dir: os.Getenv("PWD"),
+	}
+	if inStdio {
+		attr.Files = []*os.File{
+			os.Stdin, os.Stdout, os.Stderr,
+		}
+	}
+	return attr
+}

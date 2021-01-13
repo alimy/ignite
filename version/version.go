@@ -16,5 +16,5 @@ var (
 	BuildTime = ""
 
 	// AppVer version of ignite
-	AppVer = semver.MustParse("v0.4.0")
+	AppVer = semver.MustParse("v0.5.0")
 )

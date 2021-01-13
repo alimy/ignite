@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alimy/ignite/internal/config"
+	"github.com/alimy/ignite/internal/conf"
 	"github.com/alimy/ignite/internal/terminal"
 	"github.com/sirupsen/logrus"
 )
@@ -113,7 +113,7 @@ func (s *Staging) TiersInfo(workspace string) error {
 
 func (s *Staging) UnitsInfo() error {
 	ti := terminal.NewTableInfo("Name", "Provider", "Description")
-	conf := config.MyConfig()
+	conf := conf.MyConfig()
 	for _, unit := range conf.Units {
 		provider := unit.Provider
 		if provider == "" {
@@ -131,6 +131,22 @@ func (s *Staging) SshTier(userName string, tierName string, sshPort int16) error
 		return fmt.Errorf("fail search tier for %s: %w", tierName, errNotExistTier)
 	}
 	return tier.Ssh(userName, sshPort)
+}
+
+func (s *Staging) ScpTier(src, dst []string, sshPort int16) error {
+	var tierName string
+	if len(src) == 3 {
+		tierName = src[1]
+	} else if len(dst) == 3 {
+		tierName = dst[1]
+	} else {
+		return fmt.Errorf("not have tier target")
+	}
+	tier, exist := s.Tiers[tierName]
+	if !exist {
+		return fmt.Errorf("fail search tier for %s: %w", tierName, errNotExistTier)
+	}
+	return tier.Scp(src, dst, sshPort)
 }
 
 func (s *Staging) run(action string, workspace string, tier string) error {
@@ -317,7 +333,7 @@ func DefaultStaging() *Staging {
 	}
 }
 
-func StagingFrom(config *config.IgniteConfig) *Staging {
+func StagingFrom(config *conf.IgniteConfig) *Staging {
 	staging := DefaultStaging()
 	if config == nil {
 		return staging
@@ -397,7 +413,7 @@ func StagingFrom(config *config.IgniteConfig) *Staging {
 	return staging
 }
 
-func unitsFrom(config *config.IgniteConfig, defaultProvider string) map[string]*Unit {
+func unitsFrom(config *conf.IgniteConfig, defaultProvider string) map[string]*Unit {
 	units := make(map[string]*Unit, len(config.Units))
 	for _, spec := range config.Units {
 		unit := &Unit{

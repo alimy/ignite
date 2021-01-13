@@ -5,12 +5,12 @@
 package internal
 
 import (
-	"github.com/alimy/ignite/internal/config"
+	"github.com/alimy/ignite/internal/conf"
 	"github.com/alimy/ignite/internal/provision"
 
 	_ "github.com/alimy/ignite/internal/vmware"
 )
 
-func Initialize(config *config.IgniteConfig) {
+func Initialize(config *conf.IgniteConfig) {
 	provision.InitProviderWith(config)
 }

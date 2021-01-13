@@ -5,7 +5,7 @@
 package provision
 
 import (
-	"github.com/alimy/ignite/internal/process/ssh"
+	"github.com/alimy/ignite/internal/process/sh"
 	"github.com/alimy/ignite/internal/xerror"
 	"github.com/sirupsen/logrus"
 )
@@ -60,7 +60,26 @@ func (t *Unit) Unpause() error {
 
 func (t *Unit) Ssh(user string, port int16) error {
 	for _, host := range t.Hosts {
-		if err := ssh.Run(user, host.Name, port); err != nil {
+		if err := sh.Ssh(user, host.Name, port); err != nil {
+			logrus.Warn(err)
+			continue
+		}
+		break
+	}
+	return nil
+}
+
+func (t *Unit) Scp(src, dst []string, port int16) error {
+	for _, host := range t.Hosts {
+		var srcUri, dstUri string
+		if len(src) == 3 {
+			srcUri = src[0] + "@" + host.Name + ":" + src[2]
+			dstUri = dst[0]
+		} else if len(dst) == 3 {
+			srcUri = src[0]
+			dstUri = dst[0] + "@" + host.Name + ":" + dst[2]
+		}
+		if err := sh.Scp(srcUri, dstUri, port); err != nil {
 			logrus.Warn(err)
 			continue
 		}

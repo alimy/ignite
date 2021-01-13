@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/alimy/ignite/internal"
-	"github.com/alimy/ignite/internal/config"
+	"github.com/alimy/ignite/internal/conf"
 	"github.com/alimy/ignite/internal/provision"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -38,7 +38,7 @@ func workspaceTier(cmd *cobra.Command) (string, string) {
 }
 
 func prepareStaging() *provision.Staging {
-	conf, err := config.ParseFrom(confPath)
+	conf, err := conf.ParseFrom(confPath)
 	if err != nil {
 		logrus.Fatal(err)
 	}
