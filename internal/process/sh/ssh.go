@@ -36,9 +36,10 @@ func Ssh(user string, host string, port int16) error {
 func Scp(srcUri, dstUri string, port int16) error {
 	scpCmd := findScpCmd()
 	exec := &process.ExecRun{
-		Describe: fmt.Sprintf("try scp %s to %s on port %d", srcUri, dstUri, port),
+		Describe: fmt.Sprintf("run scp -r -P %d %s %s", port, srcUri, dstUri),
 		Cmd:      scpCmd,
 		Argv: []string{
+			scpCmd,
 			"-r",
 			"-P",
 			strconv.Itoa(int(port)),
